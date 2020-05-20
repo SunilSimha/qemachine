@@ -76,9 +76,18 @@ class AndorCameraController:
     Class that takes an exposure using the
     """
     def __init__(self, config_dict):
+
+        self._intialize_iXon(config_dict['use_syslog'])
+
+        # general template given below
         self.set_feature_1(config_dict['keyword1'])
         self.set_feature_2(config_dict['keyword2'])
         # etc
+
+    def _intialize_iXon(self, use_syslog):
+        # intialize the iXon using ktl keyword
+
+        pass
 
     def _set_exposure(self, new_exposure_time):
         """
@@ -99,9 +108,15 @@ class AndorCameraController:
         # call some ktl service
         pass
 
+    def _set_cooler_temp(self, target_temp):
+        # pass the target temperature to the ktl service
+        pass
+
     def _take_exposure(self):
         """
-        This function is an internal routine that commands
+        This function is an internal routine that commands the Andor
+        camera to take an exposure
+
         Returns
         -------
 
@@ -109,7 +124,7 @@ class AndorCameraController:
         # call some ktl service
         pass
 
-    def _set_feature_1(self, value):
+    def _set_(self, value):
         # call some api function here, prob a ktl keyword service
         pass
 

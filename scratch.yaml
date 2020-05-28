@@ -1,0 +1,5 @@
+test_yaml :
+    string : int and float are test numbers
+    float : 12.3
+    int : 456
+    stringified : '128.114.17.188'

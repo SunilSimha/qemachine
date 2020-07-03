@@ -62,6 +62,8 @@ s = socket.socket(
 # bind() is for setting up server ports, not connecting
 
 s.connect(('128.114.17.188', 10001))  # worked
+# for the above, will a list work?
+# need to test this
 
 
 s.gettimeout()

@@ -2,4 +2,8 @@ test_yaml :
     string : int and float are test numbers
     float : 12.3
     int : 456
-    stringified : '128.114.17.188'
+    stringified : 128.114.17.186  # quotes about an IP address are not necessary.
+    list : ['128.114.17.188', 10001]
+
+andor_service :
+    service_name : qe_andor

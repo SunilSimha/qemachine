@@ -26,205 +26,37 @@ naturally to reading in config files.
 
 """
 
+# start by adding the ktl python module path
+import sys
 
-class Monochromator:
-    """
-    Class for controlling the monochromator.
-
-    The monochomator has several individually controlled parts. For
-    simplicity's sake, they are all to be wrapped in a class
-
-    """
-    def __init__(self):
-        """
-        read in config file
+# sys.path.append('/home/Lee/svn/kroot')
+# okay, this works:
+sys.path.extend(['/opt/kroot/rel/default/lib/python',
+                 '/opt/kroot/rel/default/lib',
+                 '/usr/local/lick/lib/python',
+                 '/usr/local/lick/lib'])
+import ktl
 
 
-        Stub, too tired to think
-        """
-        pass
 
-    def filter_wheel(self, filter_index):
-        # sent a rotate command to the filter wheel
-        pass
-
-    def select_wavelength(self, center_wavelength):
-        # there are two ways of selecting the wavelength:
-        # center wavelength
-        # or the upper and lower wavelength on a bandpass
-        # the bandpass is so narrow it's effectively monochromatic
-
-        # there are two diffraction gratings, for red or blue regimes
-        # Not sure if grating selection should be automatic, based on the
-        # current wavelength, or user controlled
-        pass
-
-    def set_slit_width(self, input_width, output_width, some_middle_slit):
-        # the width of the monochromator slits
-        # there are three slits:
-        # one on the input to the monochromator
-        # another on the output of the monochromator
-        # I don't know what the 3rd, internal slit does
-        # block higher order refractions? But that's what the filter wheel is for
-        # I want an optical diagram of the monochromator
-
-        pass
+def read_keywords(ktl_service, keyword_dict):
+    for keyword, value in keyword_dict.items():
+        ktl_keyword = ktl_service[keyword]
+        value = ktl_keyword.read()
+        print(keyword, ':', value)
+        keyword_dict[keyword] = value
 
 
-class AndorCameraController:
-    """
-    Class that takes an exposure using the
-    """
-    def __init__(self, config_dict):
+def write_keywords(ktl_service, keyword_dict):
+    for keyword, value in keyword_dict.items():
+        ktl_keyword = ktl_service[keyword]
+        seq_number = ktl_keyword.write(value) # value possibly requires a string
 
-        self._intialize_iXon(config_dict['use_syslog'])
-
-        # general template given below
-        self.set_feature_1(config_dict['keyword1'])
-        self.set_feature_2(config_dict['keyword2'])
-        # etc
-
-    def _intialize_iXon(self, use_syslog):
-        # intialize the iXon using ktl keyword
-
-        pass
-
-    def _set_exposure(self, new_exposure_time):
-        """
-        This is an internal routine that sets the exposure time of the camera
-        being used with the QE machine. It is meant to be specific to the
-        camera being used, covering all the warts of that camera's particular
-        interface.
-
-        Parameters
-        ----------
-        new_exposure_time: Float
-            The exposure time in seconds that the camera will be set to
-
-        Returns
-        -------
-
-        """
-        # call some ktl service
-        pass
-
-    def _set_cooler_temp(self, target_temp):
-        # pass the target temperature to the ktl service
-        pass
-
-    def _take_exposure(self):
-        """
-        This function is an internal routine that commands the Andor
-        camera to take an exposure
-
-        Returns
-        -------
-
-        """
-        # call some ktl service
-        pass
-
-    def _set_(self, value):
-        # call some api function here, prob a ktl keyword service
-        pass
-
-    def _set_feature_2(self, value):
-        # call the second api function here
-        pass
-
-    def _set_feature_3(self, value):
-        # call the second api function here
-        pass
-
-    def take_exposure(self, exposure_dict):
-        self.set_exposure(exposure_dict['exposure_time'])
-
-        if exposure_dict['keyword3']:
-            self.set_feature3(exposure_dict['keyword3'])
-        # etc....
-
-        self.take_exposure(exposure_dict['target_file_directory'])
 
 
 """
 Other QE machine functions
 """
-
-
-class TungstenLamp:
-    # tcl version is tungstenlamp.tcl.sin
-    # main control code in tcl version is the function SetWLamp
-    # SetWLamp is about 200 lines long
-    def __init__(self, ip_address, port):
-        # set up the communication here
-
-        # I haven't found the initialization commands in the tcl code
-        # possible initialization calls
-        # 'SESS00\r' disables the front keypad and puts ps in remote mode
-        # 'SVOP00{volts}\r' sets the upper voltage limit
-        pass
-
-    # methods for controlling the current
-
-    # prototypes for sending and recieving communications from the current controller.
-    # these will probably be wrappers for a generic communication class
-    def _send_message(self, output_string):
-        pass
-
-    def _recieve_message(self, input_string):
-        pass
-
-    def off(self):
-        self._send_message(output_string='SOUT001\r')
-        # some kind of error case handling here
-
-    def on(self):
-        self._send_message(output_string='SOUT000\r')
-
-    def volt(self, voltage):
-        # formating is 3 numaric characters, with the last one being the decimal place
-        # eg, float input  12.3
-        # characters  123
-        # string passed  'VOLT00123\r'
-
-        # multiply float by ten, then truncate
-        sanitized_input = int(voltage * 10)
-        command = 'VOLT00{:03d}\r'.format(sanitized_input)
-        self._send_message(command)
-        # some kind of error handling and logging here
-
-    def current(self, current):
-        # formating is 3 numeric characters, with the last two being decimal places
-        # eg, float input  4.56
-        # characters  456
-        # string passed  'CURR00456\r'
-        sanitized_input = int(current)
-        command = 'CURR00{:03d}\r'.format(sanitized_input)
-        self._send_message(command)
-        # error handling and logging here
-
-    def get_settings(self):
-        # NOTE: this has not been found in the tcl code
-        raw_output_str = ''
-        self._send_message('GETS00\r')
-        # logging and error handling
-
-        # returned string has the voltage and current information
-        # eg, if set voltage = 12.3 V and set current = 4.56 A, the
-        # return message string will be: '123456\rOK\r'
-        self._recieve_message(raw_output_str)
-        # logging and error handling
-
-        # decode the return message here
-
-
-    # lamp_volts, lamp_current, on_off
-    # keep track of how long the lamp is on for
-    # set wval [SendCmd "SOUT001"]
-    # work on figuring out what serial codes to send later
-
-    # not sure what w_lamp() is, where it is defined
-    # sqlset w_lamp(volt,value) $volt
 
 
 def set_current():

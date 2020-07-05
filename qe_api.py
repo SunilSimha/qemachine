@@ -28,6 +28,7 @@ naturally to reading in config files.
 
 # start by adding the ktl python module path
 import sys
+import yaml
 
 # sys.path.append('/home/Lee/svn/kroot')
 # okay, this works:
@@ -38,8 +39,19 @@ sys.path.extend(['/opt/kroot/rel/default/lib/python',
 import ktl
 
 
+def _connect_ktl_service(service_config):
 
-def read_keywords(ktl_service, keyword_dict):
+    pass
+
+
+def _open_config(config_filename):
+    with open('scratch.yaml') as file:
+        config_dict = yaml.load(file, Loader=yaml.FullLoader)
+
+    return config_dict
+
+
+def _read_keywords(ktl_service, keyword_dict):
     for keyword, value in keyword_dict.items():
         ktl_keyword = ktl_service[keyword]
         value = ktl_keyword.read()
@@ -47,11 +59,17 @@ def read_keywords(ktl_service, keyword_dict):
         keyword_dict[keyword] = value
 
 
-def write_keywords(ktl_service, keyword_dict):
+def _write_keywords(ktl_service, keyword_dict):
     for keyword, value in keyword_dict.items():
         ktl_keyword = ktl_service[keyword]
         seq_number = ktl_keyword.write(value) # value possibly requires a string
 
+
+def load_config(config_filename):
+
+    raw_config = _open_config(config_filename)
+
+    _connect_ktl_service(raw_config[service])
 
 
 """

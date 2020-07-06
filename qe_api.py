@@ -26,6 +26,23 @@ naturally to reading in config files.
 
 """
 
+'''
+NOTES:
+I need a way of turning dictionary-style keyword-value pairs into ktl keywords
+
+
+Setting up path variables
+
+export KROOT=/opt/kroot
+export RELDIR=$KROOT/rel/default
+export LROOT=/usr/local/lick
+
+run exec bash to restart shell
+
+workaroud for gshow not known:
+export PATH=/opt/kroot/bin:$PATH
+'''
+
 # start by adding the ktl python module path
 import sys
 import yaml
@@ -38,10 +55,23 @@ sys.path.extend(['/opt/kroot/rel/default/lib/python',
                  '/usr/local/lick/lib'])
 import ktl
 
+# local imports
+import andorcam
 
-def _connect_ktl_service(service_config):
 
-    pass
+def _connect_ktl_service(service_name, service_config):
+    # unpack the type of the service
+    service_type = service_config['service_type']
+
+    if service_type == 'andorcam':
+        return andorcam(service_name, service_config['config'])
+
+    if service_type == 'archon':
+        pass
+    else:
+        # raise an error if no matching controller type is found
+        # fill in the error type later
+        raise
 
 
 def _open_config(config_filename):
@@ -49,20 +79,6 @@ def _open_config(config_filename):
         config_dict = yaml.load(file, Loader=yaml.FullLoader)
 
     return config_dict
-
-
-def _read_keywords(ktl_service, keyword_dict):
-    for keyword, value in keyword_dict.items():
-        ktl_keyword = ktl_service[keyword]
-        value = ktl_keyword.read()
-        print(keyword, ':', value)
-        keyword_dict[keyword] = value
-
-
-def _write_keywords(ktl_service, keyword_dict):
-    for keyword, value in keyword_dict.items():
-        ktl_keyword = ktl_service[keyword]
-        seq_number = ktl_keyword.write(value) # value possibly requires a string
 
 
 def load_config(config_filename):

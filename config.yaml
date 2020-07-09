@@ -1,4 +1,5 @@
-network :
+lantronics :
+    # network addresses
     bellows :
         ip : '128.114.17.188'
         port : 10001
@@ -6,10 +7,32 @@ network :
         ip : '128.114.17.186'
         port : 10002
 
-service:
+ccd_controller0:
     # the name of the service config section MUST match the service name
     # this is how the qe machine knows the service name
-    andor_test_cam:
-        service_type: 'andorcam'
-        config:
+    ktl_service_name: 'andor_test_cam'
+    controller_type: 'andorcam'
+    startup_configuration:
+        # make this section generic, if possible
+        expos_time : 1.0
+        overscan: pass
+        gain: 1
+        hbin : 1
+        vbin : 1
+        numrows:
+        numcols:
+        window :
+        readoutspeed :
+
+
+ccd_controller2:
+    ktl_service_name: None
+    controller_type: 'andorcam'
+    startup:
+
+
             # ktl keywords for startup go here
+
+tungsten_ps:
+    name: bk_precision
+    foo: value

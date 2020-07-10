@@ -123,14 +123,15 @@ def _write_keywords(ktl_service, keyword_dict):
         seq_number = ktl_keyword.write(value)  # value possibly requires a string
 
 
-class AndorCameraController:
+class AndorCameraController(Controller):
     """
     Class that takes an exposure using the
     """
     def __init__(self, service_name, service_config_dict):
 
         self.andor_service = ktl.Service(service_name)
-        _write_keywords(self.andor_service, service_config_dict)
+        # _write_keywords(self.andor_service, service_config_dict)
+        _read_keywords(self.andor_service, service_config_dict)
 
     def expose(self):
         # start an exposure

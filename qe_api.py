@@ -44,29 +44,30 @@ export PATH=/opt/kroot/bin:$PATH
 '''
 
 # start by adding the ktl python module path
-import sys
+# import sys
 import yaml
 
 # sys.path.append('/home/Lee/svn/kroot')
 # okay, this works:
-sys.path.extend(['/opt/kroot/rel/default/lib/python',
-                 '/opt/kroot/rel/default/lib',
-                 '/usr/local/lick/lib/python',
-                 '/usr/local/lick/lib'])
-import ktl
+# sys.path.extend(['/opt/kroot/rel/default/lib/python',
+#                  '/opt/kroot/rel/default/lib',
+#                  '/usr/local/lick/lib/python',
+#                  '/usr/local/lick/lib'])
+# import ktl
 
 # local imports
-import andorcam
+import controller
 
 
-def _connect_ktl_service(service_name, service_config):
+def _connect_ktl_service(service_config):
     # unpack the type of the service
-    service_type = service_config['service_type']
+    service_type = service_config['controller_type']
 
     if service_type == 'andorcam':
-        return andorcam(service_name, service_config['config'])
+        return controller.AndorCameraController(service_config['ktl_service_name'], service_config['startup_config'])
 
     if service_type == 'archon':
+        # return an archon controller class
         pass
     else:
         # raise an error if no matching controller type is found
@@ -74,18 +75,29 @@ def _connect_ktl_service(service_name, service_config):
         raise
 
 
-def _open_config(config_filename):
+def _open_config(config_filename, **kwargs):
     with open('scratch.yaml') as file:
-        config_dict = yaml.load(file, Loader=yaml.FullLoader)
+        config_dict = yaml.load(file, **kwargs)
 
     return config_dict
 
 
-def load_config(config_filename):
+def load_config(config_filename, **kwargs):
+    # load_config(config_filename, Loader=yaml.FullLoader)
+    config_dict = _open_config(config_filename, **kwargs)
 
-    raw_config = _open_config(config_filename)
+    # I should figure out a way of parsing raw_config, and pulling
+    # everything that matches the pattern 'ccd_controller\d'. Then each
+    # matching instance will get it's own ktl service connection
+    controller_config = config_dict['ccd_controller0']
 
-    _connect_ktl_service(raw_config[service])
+    if controller_config['ktl_service_name']:
+        ktl_service = _connect_ktl_service(config_dict['ccd_controller0'])
+
+    # add more stuff that needs to be initialized
+    # e.g., possibly make network connections
+
+    return ktl_service
 
 
 """

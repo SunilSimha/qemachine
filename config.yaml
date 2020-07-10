@@ -12,7 +12,7 @@ ccd_controller0:
     # this is how the qe machine knows the service name
     ktl_service_name: 'andor_test_cam'
     controller_type: 'andorcam'
-    startup_configuration:
+    startup_config:
         # make this section generic, if possible
         expos_time : 1.0
         overscan: pass

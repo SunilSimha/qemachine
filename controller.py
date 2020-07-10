@@ -177,7 +177,7 @@ class AndorCameraController(Controller):
 
     def get_curr_temp(self):
         # retrieve the current temperature of the cooler
-        return self.andor_service['CURRTEMP']
+        return self.andor_service['CURRTEMP'].read()
 
     def set_amp(self):
         # select the readout amplifier
@@ -193,7 +193,7 @@ class AndorCameraController(Controller):
 
     def get_gain(self):
         # retrieve the current gain
-        return self.andor_service['GAINMODE']
+        return self.andor_service['GAINMODE'].read()
 
     def set_read_speed(self):
         # select the readout speed
@@ -201,7 +201,7 @@ class AndorCameraController(Controller):
 
     def get_read_speed(self):
         # retrieve the current readout speed
-        return self.andor_service['READSPEED']
+        return self.andor_service['READSPEED'].read()
 
     def set_binning(self):
         # set the pixel binning
@@ -209,7 +209,7 @@ class AndorCameraController(Controller):
 
     def get_binning(self):
         # retrieve the current pixel binning
-        return self.andor_service['BINNING']
+        return self.andor_service['BINNING'].read()
 
     def set_window(self):
         # define a window, i.e., a region of interest or subsection of the CCD
@@ -227,7 +227,7 @@ class AndorCameraController(Controller):
 
     def get_window(self):
         # retrieve the current image window
-        return self.andor_service['WINDOW']
+        return self.andor_service['WINDOW'].read()
 
     def set_shutter(self):
         # open or close the camera shutter
@@ -235,7 +235,7 @@ class AndorCameraController(Controller):
 
     def get_shutter(self):
         # retrieve the current shutter mode
-        return self.andor_service['SHUTTERMODE']
+        return self.andor_service['SHUTTERMODE'].read()
 
     def _set_expos_mode(self, new_mode):
         self.andor_service['EXPMODE'].write(new_mode)

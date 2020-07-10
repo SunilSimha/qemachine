@@ -76,7 +76,7 @@ def _connect_ktl_service(service_config):
 
 
 def _open_config(config_filename, **kwargs):
-    with open('scratch.yaml') as file:
+    with open(config_filename) as file:
         config_dict = yaml.load(file, **kwargs)
 
     return config_dict

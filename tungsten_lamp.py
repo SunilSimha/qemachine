@@ -1,34 +1,61 @@
 
 
+import socket
+
+
 class TungstenLamp:
     # tcl version is tungstenlamp.tcl.sin
     # main control code in tcl version is the function SetWLamp
     # SetWLamp is about 200 lines long
-    def __init__(self, ip_address, port):
+    def __init__(self, ip_port_tuple, timeout=8):
         # set up the communication here
+        # record the ip address and port
+        self.ip_address = ip_port_tuple[0]
+        self.port_number = ip_port_tuple[1]
+        # build the socket
+        self.lan_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.lan_socket.settimeout(timeout)
+
+        # connect to the port and ip address.
+        self.lan_socket.connect(ip_port_tuple)
+
+        # start remote session by disabling the front panel.
+        # If the user really wants the front panel, they can reverse this by sending b'ENDS00\r"
+        self._send_message(b'SESS00\r')
 
         # I haven't found the initialization commands in the tcl code
         # possible initialization calls
         # 'SESS00\r' disables the front keypad and puts ps in remote mode
         # 'SVOP00{volts}\r' sets the upper voltage limit
-        pass
 
     # methods for controlling the current
 
     # prototypes for sending and recieving communications from the current controller.
     # these will probably be wrappers for a generic communication class
-    def _send_message(self, output_string):
-        pass
+    def _send_message(self, output_string, **kwargs):
+        # strings must be in binary ASCII
+        self.lan_socket.sendall(output_string, **kwargs)
 
-    def _recieve_message(self, input_string):
-        pass
+    def _recieve_message(self, message_size=1024, **kwargs):
+        # connection should automatically time out after 8 secs
+        reply = self.lan_socket.recv(message_size, **kwargs)
+
+        if reply == '':
+            # this means the lantronix closed the socket for some reason
+            # close this end, and raise error
+            self.lan_socket.close()
+            raise BrokenPipeError(str(self.ip_address) + str(self.port_number) + 'closed connection')
+
+        else:
+            return reply
 
     def off(self):
-        self._send_message(output_string='SOUT001\r')
+        self._send_message(output_string=b'SOUT001\r')
         # some kind of error case handling here
 
     def on(self):
-        self._send_message(output_string='SOUT000\r')
+        self._send_message(output_string=b'SOUT000\r')
 
     def volt(self, voltage):
         # formating is 3 numaric characters, with the last one being the decimal place

@@ -15,12 +15,12 @@ def readbytes(fd):
     # ewwwww
     return 0
 
-def StatusDecode(status):
+def decode_status(status):
     status_dict = {
-            0: 'OK'
-            1: 'INIT_ERROR'
-            2: 'BAD_COMMAND'
-            3: 'OUT_OF_RANGE'
+            0: 'OK',
+            1: 'INIT_ERROR',
+            2: 'BAD_COMMAND',
+            3: 'OUT_OF_RANGE',
             7: 'OVERLOAD'
         }
     # return status translation, or UNKNOWN if not found
@@ -60,6 +60,7 @@ s = socket.socket(
 
 # s.bind(('128.114.17.188', 10001))  # didn't work
 # bind() is for setting up server ports, not connecting
+# use telnet to test connections
 
 s.connect(('128.114.17.188', 10001))  # worked
 # for the above, will a list work?

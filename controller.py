@@ -21,16 +21,23 @@ import ktl
 
 
 class Controller:
-    # this is a template controller interface class
-    # populate all these functions, and you will have a working controller class for the QE machine
+    """
+    This is a template controller interface class
 
+    Populate all these functions, and you will have a working controller
+    class for the QE machine. Each function has expected arguments and
+    return values. It may be possible to leave some functions unpopulated,
+    in which case the function will simply return a None value. The QE
+    machine software will attempt to handle None values gracefully, but is
+    not guaranteed to work.
+    """
     # I need to carefully define the arguments for these functions.
     # I also need to add a way of handling multiple amps in the future
     def expose(self):
         # start an exposure
         pass
 
-    def set_cooler(self):
+    def set_cooler(self, cooler_on):
         # turn the cooler on or off
         pass
 
@@ -38,7 +45,7 @@ class Controller:
         # retrieve the current cooler setting
         pass
 
-    def set_temp(self):
+    def set_temp(self, target_temp):
         # set the target temperature of the cooler
         pass
 
@@ -50,7 +57,7 @@ class Controller:
         # retrieve the current temperature of the cooler
         pass
 
-    def set_exposure_time(self):
+    def set_exposure_time(self, new_exposure_time):
         # set the exposure time
         pass
 
@@ -107,25 +114,9 @@ class Controller:
         pass
 
 
-def _read_keywords(ktl_service, keyword_dict):
-    # reads multiple ktl keywords
-    for keyword, value in keyword_dict.items():
-        ktl_keyword = ktl_service[keyword]
-        value = ktl_keyword.read()
-        print(keyword, ':', value)
-        keyword_dict[keyword] = value
-
-
-def _write_keywords(ktl_service, keyword_dict):
-    # writes multiple ktl keywords
-    for keyword, value in keyword_dict.items():
-        ktl_keyword = ktl_service[keyword]
-        seq_number = ktl_keyword.write(value)  # value possibly requires a string
-
-
 class AndorCameraController(Controller):
     """
-    Class that takes an exposure using the
+    Wrapper class for the iXon 888 ktl keyword service
     """
     def __init__(self, service_name, service_config_dict):
 
@@ -272,3 +263,20 @@ class AndorCameraController(Controller):
         # etc....
 
         self.take_exposure(exposure_dict['target_file_directory'])
+
+
+def _read_keywords(ktl_service, keyword_dict):
+    # reads multiple ktl keywords
+    for keyword, value in keyword_dict.items():
+        ktl_keyword = ktl_service[keyword]
+        value = ktl_keyword.read()
+        print(keyword, ':', value)
+        keyword_dict[keyword] = value
+
+
+def _write_keywords(ktl_service, keyword_dict):
+    # writes multiple ktl keywords
+    for keyword, value in keyword_dict.items():
+        ktl_keyword = ktl_service[keyword]
+        seq_number = ktl_keyword.write(value)  # value possibly requires a string
+

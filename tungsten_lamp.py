@@ -17,12 +17,12 @@ class TungstenLamp:
         self.ip_address = ip_port_tuple[0]
         self.port_number = ip_port_tuple[1]
         # build the socket
-        self.lan_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._lan_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.lan_socket.settimeout(timeout)
+        self._lan_socket.settimeout(timeout)
 
         # connect to the port and ip address.
-        self.lan_socket.connect(ip_port_tuple)
+        self._lan_socket.connect(ip_port_tuple)
         # when the BK powers down, b'\x00\x00\x00' will be found in the output buffer
         # when the BK powers up, b'\x00' will be found in the output buffer.
         # Not sure if the source of the above is the Lantronix or the BK power supply.
@@ -49,26 +49,23 @@ class TungstenLamp:
         # strings must be in binary ASCII
 
         # flush the buffer by performing a call and response, and discarding
-        self.lan_socket.sendall(b'GETS00\r')
+        self._lan_socket.sendall(b'GETS00\r')
         sleep(0.1)  # sleep briefly to let the message send
         self._receive_message()
 
-        self.lan_socket.sendall(output_string, **kwargs)
+        self._lan_socket.sendall(output_string, **kwargs)
         if self.verbose:
             print('Command sent:', output_string)
-        sleep(0.1)  # sleep briefly to let the message send
+        # sleep(0.1)  # sleep briefly to let the message send
 
     def _receive_message(self, **kwargs):
         # connection should automatically time out after 8 secs
-        reply = self.lan_socket.recv(self.message_size, **kwargs)
-
-        if self.verbose:
-            print('Reply received:', reply)
+        reply = self._lan_socket.recv(self.message_size, **kwargs)
 
         if reply == '':
             # this means the lantronix closed the socket for some reason
             # close this end, and raise error
-            self.lan_socket.close()
+            self._lan_socket.close()
             raise BrokenPipeError(str(self.ip_address) + str(self.port_number) + 'closed connection')
 
         # check for end of string having a 'OK\r'
@@ -85,8 +82,11 @@ class TungstenLamp:
             # sleep for a moment
             sleep(0.1)
             # get more of the buffer
-            reply += self.lan_socket.recv(self.message_size, **kwargs)
+            reply += self._lan_socket.recv(self.message_size, **kwargs)
             tries += 1
+
+        if self.verbose:
+            print('Reply received:', reply)
 
         return reply
 
@@ -157,7 +157,7 @@ class TungstenLamp:
         self._send_message(b'ENDS00\r')
         self._receive_message()
         # last, close the socket
-        self.lan_socket.close()
+        self._lan_socket.close()
 
     # lamp_volts, lamp_current, on_off
     # keep track of how long the lamp is on for

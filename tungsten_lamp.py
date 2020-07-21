@@ -57,7 +57,7 @@ class TungstenLamp:
         self.lan_socket.sendall(output_string, **kwargs)
         if self.verbose:
             print('Command sent:', output_string)
-        sleep(0.1)  # sleep briefly to let the message send
+        # sleep(0.2)  # sleep briefly to let the message send
 
     def _receive_message(self, **kwargs):
         # connection should automatically time out after 8 secs
@@ -71,15 +71,25 @@ class TungstenLamp:
             # close this end, and raise error
             self.lan_socket.close()
             raise BrokenPipeError(str(self.ip_address) + str(self.port_number) + 'closed connection')
-        if reply[-3:] != b'OK\r':
-            # check for end of string having a 'OK\r'
-            # possible exception classes:
-            # ValueError
-            # RuntimeError
-            # consider makign a custom error
-            raise RuntimeError('Unexpected reply: BK Precision power supply responded with', reply)
-        else:
-            return reply
+
+        # check for end of string having a 'OK\r'
+        tries = 1
+        while reply[-3:] != b'OK\r':
+            # it should never take more than 2 tries
+            # give it five tries, then raise an error
+            if tries == 5:
+                # possible exception classes:
+                # ValueError
+                # RuntimeError
+                # consider makign a custom error
+                raise RuntimeError('Unexpected reply: BK Precision power supply responded with', reply)
+            # sleep for a moment
+            sleep(0.1)
+            # get more of the buffer
+            reply += self.lan_socket.recv(self.message_size, **kwargs)
+            tries += 1
+
+        return reply
 
     def off(self):
         self._send_message(output_string=b'SOUT001\r')

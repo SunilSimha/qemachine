@@ -15,7 +15,6 @@ class TungstenLamp:
         # set up the communication here
         # record the ip address and port
         self.ip_address = ip_port_tuple[0]
-        sleep(0.1)
         self.port_number = ip_port_tuple[1]
         # build the socket
         self.lan_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -52,12 +51,12 @@ class TungstenLamp:
         # flush the buffer by performing a call and response, and discarding
         self.lan_socket.sendall(b'GETS00\r')
         sleep(0.1)  # sleep briefly to let the message send
-        self.lan_socket.recv(self.message_size)
+        self._receive_message()
 
         self.lan_socket.sendall(output_string, **kwargs)
         if self.verbose:
             print('Command sent:', output_string)
-        # sleep(0.2)  # sleep briefly to let the message send
+        sleep(0.1)  # sleep briefly to let the message send
 
     def _receive_message(self, **kwargs):
         # connection should automatically time out after 8 secs

@@ -45,20 +45,28 @@ class TungstenLamp:
     # prototypes for sending and recieving communications from the current controller.
     # these will probably be wrappers for a generic communication class
 
-    def _send_message(self, output_string, **kwargs):
+    def _send_message(self, output_string, verbose=None, **kwargs):
         # strings must be in binary ASCII
+        if verbose is None:
+            verbose = self.verbose
 
-        # flush the buffer by performing a call and response, and discarding
+        # empty the buffer by performing a call and response, and discarding the reply
+        # this is a cludge, to deal with noise appearing in the bitstream
+        # simply requesting the buffer to send it's data empties the data
+        # but the request will result in a timeout error if there is no data to receive
+        # in the future, someone should figure out a better way of emptying the buffer
         self._lan_socket.sendall(b'GETS00\r')
         sleep(0.1)  # sleep briefly to let the message send
-        self._receive_message()
+        self._receive_message(verbose=False)
 
         self._lan_socket.sendall(output_string, **kwargs)
-        if self.verbose:
+        if verbose:
             print('Command sent:', output_string)
         # sleep(0.1)  # sleep briefly to let the message send
 
-    def _receive_message(self, **kwargs):
+    def _receive_message(self, verbose=None, **kwargs):
+        if verbose is None:
+            verbose = self.verbose
         # connection should automatically time out after 8 secs
         reply = self._lan_socket.recv(self.message_size, **kwargs)
 
@@ -85,7 +93,7 @@ class TungstenLamp:
             reply += self._lan_socket.recv(self.message_size, **kwargs)
             tries += 1
 
-        if self.verbose:
+        if verbose:
             print('Reply received:', reply)
 
         return reply

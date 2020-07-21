@@ -65,7 +65,7 @@ class TungstenLamp:
         self._lan_socket.sendall(output_string, **kwargs)
         if verbose:
             print('Command sent:', output_string)
-        # sleep(0.1)  # sleep briefly to let the message send
+        sleep(0.1)  # sleep briefly to let the message send
 
     def _receive_message(self, verbose=None, **kwargs):
         if verbose is None:
@@ -82,8 +82,9 @@ class TungstenLamp:
         # check for end of string having a 'OK\r'
         tries = 1
         while reply[-3:] != b'OK\r':
-            if verbose:
-                print('Message request', tries, 'received:', reply)
+            # if verbose:
+            #     print('Message request', tries, 'received:', reply)
+
             # it should never take more than 2 tries
             # give it five tries, then raise an error
             if tries == 5:

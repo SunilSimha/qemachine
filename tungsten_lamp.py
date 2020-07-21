@@ -1,16 +1,21 @@
 
 
 import socket
-
+import re
+from time import sleep
 
 class TungstenLamp:
     # tcl version is tungstenlamp.tcl.sin
     # main control code in tcl version is the function SetWLamp
     # SetWLamp is about 200 lines long
-    def __init__(self, ip_port_tuple, timeout=8):
+    def __init__(self, ip_port_tuple, timeout=8, message_size=1024, verbose=False):
+        self.verbose = verbose
+        self.message_size = message_size
+
         # set up the communication here
         # record the ip address and port
         self.ip_address = ip_port_tuple[0]
+        sleep(0.1)
         self.port_number = ip_port_tuple[1]
         # build the socket
         self.lan_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,10 +24,17 @@ class TungstenLamp:
 
         # connect to the port and ip address.
         self.lan_socket.connect(ip_port_tuple)
+        # when the BK powers down, b'\x00\x00\x00' will be found in the output buffer
+        # when the BK powers up, b'\x00' will be found in the output buffer.
+        # Not sure if the source of the above is the Lantronix or the BK power supply.
+        # Random characters can also be found in the output buffer, these are probably noise
 
         # start remote session by disabling the front panel.
         # If the user really wants the front panel, they can reverse this by sending b'ENDS00\r"
         self._send_message(b'SESS00\r')
+
+        # recieve the ok, and discard. This also clears the buffer
+        self._receive_message()
 
         # I haven't found the initialization commands in the tcl code
         # possible initialization calls
@@ -33,26 +45,46 @@ class TungstenLamp:
 
     # prototypes for sending and recieving communications from the current controller.
     # these will probably be wrappers for a generic communication class
+
     def _send_message(self, output_string, **kwargs):
         # strings must be in binary ASCII
-        self.lan_socket.sendall(output_string, **kwargs)
 
-    def _recieve_message(self, message_size=1024, **kwargs):
+        # flush the buffer by performing a call and response, and discarding
+        self.lan_socket.sendall(b'GETS00\r')
+        sleep(0.1)  # sleep briefly to let the message send
+        self.lan_socket.recv(self.message_size)
+
+        self.lan_socket.sendall(output_string, **kwargs)
+        if self.verbose:
+            print('Command sent:', output_string)
+        sleep(0.1)  # sleep briefly to let the message send
+
+    def _receive_message(self, **kwargs):
         # connection should automatically time out after 8 secs
-        reply = self.lan_socket.recv(message_size, **kwargs)
+        reply = self.lan_socket.recv(self.message_size, **kwargs)
+
+        if self.verbose:
+            print('Reply received:', reply)
 
         if reply == '':
             # this means the lantronix closed the socket for some reason
             # close this end, and raise error
             self.lan_socket.close()
             raise BrokenPipeError(str(self.ip_address) + str(self.port_number) + 'closed connection')
-
+        if reply[-3:] != b'OK\r':
+            # check for end of string having a 'OK\r'
+            # possible exception classes:
+            # ValueError
+            # RuntimeError
+            # consider makign a custom error
+            raise RuntimeError('Unexpected reply: BK Precision power supply responded with', reply)
         else:
             return reply
 
     def off(self):
         self._send_message(output_string=b'SOUT001\r')
-        # some kind of error case handling here
+
+        self._receive_message()
 
     def on(self):
         self._send_message(output_string=b'SOUT000\r')
@@ -65,34 +97,58 @@ class TungstenLamp:
 
         # multiply float by ten, then truncate
         sanitized_input = int(voltage * 10)
-        command = 'VOLT00{:03d}\r'.format(sanitized_input)
+        command = b'VOLT00%(volts)03d' % {b'volts': sanitized_input}
+        # command = b'VOLT00{:03d}\r'.format(sanitized_input)
         self._send_message(command)
-        # some kind of error handling and logging here
+
+        # pause while the command
+        # clear the buffer.
+        # This will raise an error if the most recent command did not execute
+        # not sure if I should return this function
+        self._receive_message()
 
     def current(self, current):
         # formating is 3 numeric characters, with the last two being decimal places
-        # eg, float input  4.56
+        # eg, to set 4.56 amps, give float input  4.56
         # characters  456
         # string passed  'CURR00456\r'
-        sanitized_input = int(current)
-        command = 'CURR00{:03d}\r'.format(sanitized_input)
+        sanitized_input = int(current * 100)
+        # command = 'CURR00{:03d}\r'.format(sanitized_input)
+        command = b'CURR00%(amps)03d' % {b'amps': sanitized_input}
         self._send_message(command)
-        # error handling and logging here
+
+        # clear buffer and check for errors
+        self._receive_message()
 
     def get_settings(self):
         # NOTE: this has not been found in the tcl code
-        raw_output_str = ''
-        self._send_message('GETS00\r')
+        raw_output_str = b''
+        self._send_message(b'GETS00\r')
         # logging and error handling
 
         # returned string has the voltage and current information
         # eg, if set voltage = 12.3 V and set current = 4.56 A, the
         # return message string will be: '123456\rOK\r'
-        self._recieve_message(raw_output_str)
-        # logging and error handling
+        reply = self._receive_message()
 
-        # decode the return message here
+        # extract the info of interest: 6 digits followed by a \r
+        raw_output_str = re.search(b'(\\d{6})\r', reply)[0]
+        raw_voltage = raw_output_str[:3]
+        raw_current = raw_output_str[3:6]
 
+        voltage = float(raw_voltage)/10
+        current = float(raw_current)/100
+
+        return voltage, current
+
+    def shutdown(self):
+        # turn off the lamp power
+        self.off()
+        # return panel control
+        self._send_message(b'ENDS00\r')
+        self._receive_message()
+        # last, close the socket
+        self.lan_socket.close()
 
     # lamp_volts, lamp_current, on_off
     # keep track of how long the lamp is on for

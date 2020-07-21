@@ -30,7 +30,7 @@ class TungstenLamp:
 
         # start remote session by disabling the front panel.
         # If the user really wants the front panel, they can reverse this by sending b'ENDS00\r"
-        self._send_message(b'SESS00\r')
+        self._send_message(b'SESS00\r', empty=False)
 
         # recieve the ok, and discard. This also clears the buffer
         self._receive_message()
@@ -45,19 +45,22 @@ class TungstenLamp:
     # prototypes for sending and recieving communications from the current controller.
     # these will probably be wrappers for a generic communication class
 
-    def _send_message(self, output_string, verbose=None, **kwargs):
+    def _send_message(self, output_string, verbose=None, empty=True, **kwargs):
         # strings must be in binary ASCII
         if verbose is None:
             verbose = self.verbose
 
-        # empty the buffer by performing a call and response, and discarding the reply
-        # this is a cludge, to deal with noise appearing in the bitstream
-        # simply requesting the buffer to send it's data empties the data
-        # but the request will result in a timeout error if there is no data to receive
-        # in the future, someone should figure out a better way of emptying the buffer
-        self._lan_socket.sendall(b'GETS00\r')
-        sleep(0.1)  # sleep briefly to let the message send
-        self._receive_message(verbose=False)
+        if empty:
+            # empty the buffer by performing a call and response, and discarding the reply
+            # this is a cludge, to deal with noise appearing in the bitstream
+            # simply requesting the buffer to send it's data empties the data
+            # but the request will result in a timeout error if there is no data to receive
+            # in the future, someone should figure out a better way of emptying the buffer
+            self._lan_socket.sendall(b'GETS00\r')
+            if verbose:
+                print('Command sent:', b'GETS00\r')
+            sleep(0.1)  # sleep briefly to let the message send
+            self._receive_message()
 
         self._lan_socket.sendall(output_string, **kwargs)
         if verbose:
@@ -79,6 +82,8 @@ class TungstenLamp:
         # check for end of string having a 'OK\r'
         tries = 1
         while reply[-3:] != b'OK\r':
+            if verbose:
+                print('Message request', tries, 'received:', reply)
             # it should never take more than 2 tries
             # give it five tries, then raise an error
             if tries == 5:
@@ -106,7 +111,7 @@ class TungstenLamp:
     def on(self):
         self._send_message(output_string=b'SOUT000\r')
 
-    def volt(self, voltage):
+    def set_volts(self, voltage):
         # formating is 3 numaric characters, with the last one being the decimal place
         # eg, float input  12.3
         # characters  123
@@ -114,7 +119,7 @@ class TungstenLamp:
 
         # multiply float by ten, then truncate
         sanitized_input = int(voltage * 10)
-        command = b'VOLT00%(volts)03d' % {b'volts': sanitized_input}
+        command = b'VOLT00%(volts)03d\r' % {b'volts': sanitized_input}
         # command = b'VOLT00{:03d}\r'.format(sanitized_input)
         self._send_message(command)
 
@@ -124,14 +129,14 @@ class TungstenLamp:
         # not sure if I should return this function
         self._receive_message()
 
-    def current(self, current):
+    def set_curr(self, current):
         # formating is 3 numeric characters, with the last two being decimal places
         # eg, to set 4.56 amps, give float input  4.56
         # characters  456
         # string passed  'CURR00456\r'
         sanitized_input = int(current * 100)
         # command = 'CURR00{:03d}\r'.format(sanitized_input)
-        command = b'CURR00%(amps)03d' % {b'amps': sanitized_input}
+        command = b'CURR00%(amps)03d\r' % {b'amps': sanitized_input}
         self._send_message(command)
 
         # clear buffer and check for errors

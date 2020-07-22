@@ -1,22 +1,21 @@
 """
 NOTES:
 
-I don't know if ktl KEYWORD values need to be strings.
-I also need to know what format is required for non-obvious values,
-such as binning.
+KTL keyword values should be whatever the keyword type is.
+
+I don't know how to handle enums. Python doesn't have native enums
+
+Keywords can be array-likes, such as for binning.
 
 """
 
 
 import sys
-
-
-# okay, this works:
+# start by adding the ktl python module path
 sys.path.extend(['/opt/kroot/rel/default/lib/python',
                  '/opt/kroot/rel/default/lib',
                  '/usr/local/lick/lib/python',
                  '/usr/local/lick/lib'])
-
 import ktl
 
 
@@ -116,7 +115,11 @@ class Controller:
 
 class AndorCameraController(Controller):
     """
-    Wrapper class for the iXon 888 ktl keyword service
+    Wrapper class for the iXon 888 ktl keyword service.
+
+    Notes
+    -----
+    The behavior of taking an exposure with ktl keywords needs to be tested.
     """
     def __init__(self, service_name, service_config_dict):
 
@@ -138,13 +141,7 @@ class AndorCameraController(Controller):
 
     def set_cooler(self, cooler_on):
         # turn the cooler on or off
-        """
-
-                Parameters
-                ----------
-                cooler_on: boolean
-                    If True, turns the cooler on. If False, turns the cooler off
-                """
+        """"""
         self.andor_service['COOLING'].write(cooler_on)
         # cooler_on possibly needs to be stringified
 
@@ -156,8 +153,7 @@ class AndorCameraController(Controller):
         # set the target temperature of the cooler
 
         # pass the target temperature to the ktl service
-        keyword = self.andor_service['COOLTARG']
-        ktl_function_code = keyword.write(target_temp)
+        ktl_function_code = self.andor_service['COOLTARG'].write(target_temp)
 
         # to check what the current target temp is
         # current_target = keyword.read()
@@ -202,9 +198,11 @@ class AndorCameraController(Controller):
         # retrieve the current pixel binning
         return self.andor_service['BINNING'].read()
 
-    def set_window(self):
+    def set_window(self, window_array):
         # define a window, i.e., a region of interest or subsection of the CCD
         """
+        define a window, i.e., a region of interest or subsection of the CCD
+
         The KEYWORD format is
         WINDOW =
             hbeg:	136
@@ -212,9 +210,20 @@ class AndorCameraController(Controller):
             vbeg:	220
             vend:	850
 
-        I'm not sure what format is expected here.
+
+        Parameters
+        ----------
+        window_array: array-like
+            This needs to formatted as an array-like python object, like a list
+            or tuple. The array-like needs to have exactly 4 entries,
+            corresponding to the format given above. If it doesn't have exactly
+            4 entries, it will raise an error.
+
+        Returns
+        -------
+
         """
-        pass
+        self.andor_service['WINDOW'].write(window_array)
 
     def get_window(self):
         # retrieve the current image window

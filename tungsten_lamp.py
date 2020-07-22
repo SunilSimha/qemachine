@@ -66,7 +66,7 @@ class TungstenLamp:
         Turns off the output and shuts down the connection to the power supply
 
     Raises
-    ------
+    ------a
     BrokenPipeError:
         Occurs when the server side of the connection to the Lantronix is
         closed.
@@ -99,7 +99,7 @@ class TungstenLamp:
 
     There are several functionalities that might be needed, that are not yet
     implemented. Possible candidates are setting and getting the upper voltage
-    supply limit, and
+    supply limit
     """
     # tcl version is tungstenlamp.tcl.sin
     # main control code in tcl version is the function SetWLamp

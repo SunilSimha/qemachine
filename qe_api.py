@@ -10,7 +10,13 @@ The goal is to keep the user interface the same, while allowing
         options.
 
 
-All methods and functions should return an error code
+All methods and functions should return an error code.
+Scratch the above: all methods and functions returning an error code does not
+mesh well with python. Python does not do pass-by-reference, so if I want a
+value from a function, I need to return that value(s). Alternatively, python
+will do pass-by-reference for lists and dicts, I could leverage that. But that
+is not in accordance with standard python practice. Standard python practice is
+to return a value, and deal with errors by raising interrupts.
 
 The basic flow is for the user to enter keyword-value pairs via the terminal.
 This keyword-value pair will be interpreted as a dictionary, which can then be
@@ -24,10 +30,9 @@ another totally different CCD controller without changing any arguments.
 Another nice aspect of generating dictionaries from text is it lends itself
 naturally to reading in config files.
 
-"""
 
-'''
-NOTES:
+Notes
+-----
 I need a way of turning dictionary-style keyword-value pairs into ktl keywords
 
 
@@ -41,11 +46,12 @@ run exec bash to restart shell
 
 workaroud for gshow not known:
 export PATH=/opt/kroot/bin:$PATH
-'''
+"""
 
-# start by adding the ktl python module path
+
 # import sys
 import yaml
+
 
 # sys.path.append('/home/Lee/svn/kroot')
 # okay, this works:

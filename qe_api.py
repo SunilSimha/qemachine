@@ -63,6 +63,7 @@ import yaml
 
 # local imports
 import controller
+import tungsten_lamp
 
 
 def _connect_ktl_service(service_config):
@@ -81,30 +82,31 @@ def _connect_ktl_service(service_config):
         raise
 
 
-def _open_config(config_filename, **kwargs):
+def open_config(config_filename, **kwargs):
     with open(config_filename) as file:
         config_dict = yaml.load(file, **kwargs)
 
     return config_dict
 
 
-def load_config(config_filename, **kwargs):
-    # load_config(config_filename, Loader=yaml.FullLoader)
-    config_dict = _open_config(config_filename, **kwargs)
-
+def start_controller(config_dict):
     # I should figure out a way of parsing raw_config, and pulling
     # everything that matches the pattern 'ccd_controller\d'. Then each
     # matching instance will get it's own ktl service connection
     controller_config = config_dict['ccd_controller0']
 
     if controller_config['ktl_service_name']:
-        ktl_service = _connect_ktl_service(config_dict['ccd_controller0'])
+        ccd_controller = _connect_ktl_service(config_dict['ccd_controller0'])
 
     # add more stuff that needs to be initialized
     # e.g., possibly make network connections
 
-    return ktl_service
+    return ccd_controller
 
+def start_w_lamp(config_dict, **kwargs):
+    lan_address = config_dict['lantronix']['w_lamp']
+
+    return tungsten_lamp.TungstenLamp(lan_address, **kwargs)
 
 """
 Other QE machine functions

@@ -129,7 +129,9 @@ class AndorCameraController(Controller):
 
     def expose(self):
         # start an exposure
-        pass
+        # possible exposure values
+        # None, Abort, Stop, Start
+        self.andor_service['EXPOSE']
 
     def set_exposure_time(self, new_exposure_time):
         # set the exposure time
@@ -190,9 +192,8 @@ class AndorCameraController(Controller):
         # retrieve the current readout speed
         return self.andor_service['READSPEED'].read()
 
-    def set_binning(self):
-        # set the pixel binning
-        pass
+    def set_binning(self, new_bins):
+        self.andor_service['BINNING'].write(new_bins)
 
     def get_binning(self):
         # retrieve the current pixel binning
@@ -229,9 +230,11 @@ class AndorCameraController(Controller):
         # retrieve the current image window
         return self.andor_service['WINDOW'].read()
 
-    def set_shutter(self):
+    def set_shutter(self, mode):
         # open or close the camera shutter
-        pass
+        # possible values
+        # 'auto', 'open', 'shut'
+        self.andor_service['SHUTTERMODE'].write(mode)
 
     def get_shutter(self):
         # retrieve the current shutter mode
@@ -247,31 +250,6 @@ class AndorCameraController(Controller):
         """
         self.andor_service['EXPOSE'].write('')
         # I have no idea what value to pass to trigger a write
-
-    def _set_binning(self, new_bins):
-
-        self.andor_service['BINNING'].write(new_bins)
-
-    def _set_window(self, hsize, vsize):
-        """
-        The KEYWORD format is
-        WINDOW =
-            hbeg:	136
-            hend:	850
-            vbeg:	220
-            vend:	850
-
-        I'm not sure what format is expected here.
-        """
-
-    def _expose(self, exposure_dict):
-        self.set_exposure(exposure_dict['exposure_time'])
-
-        if exposure_dict['keyword3']:
-            self.set_feature3(exposure_dict['keyword3'])
-        # etc....
-
-        self.take_exposure(exposure_dict['target_file_directory'])
 
 
 def _read_keywords(ktl_service, keyword_dict):

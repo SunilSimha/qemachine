@@ -327,7 +327,7 @@ class TungstenLamp:
         reply = self._receive_message()
 
         # extract the info of interest: 6 digits followed by a \r
-        raw_output_str = re.search(b'(\\d{6})\r', reply)[0]
+        raw_output_str = re.search(br'(\d{6})\r', reply)[0]
         raw_voltage = raw_output_str[:3]
         raw_current = raw_output_str[3:6]
 

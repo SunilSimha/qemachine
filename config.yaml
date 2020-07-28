@@ -1,4 +1,4 @@
-lantronics :
+lantronix :
     # network addresses
     bellows :
         ip : '128.114.17.188'

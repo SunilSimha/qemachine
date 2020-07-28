@@ -20,7 +20,7 @@ ccd_controller0:
         # put an intial configuration here if desired
         EXPOSURE : 1.0
         GAINMODE : 0
-        READSPEED : 0
+        READSPEED : '1.0MHz'
         # put whatever keywords that have a controller function here
         FILENAME :
 

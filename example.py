@@ -5,12 +5,16 @@ from tungsten_lamp import TungstenLamp
 config = open_config('config.yaml')
 
 # start the camera controller
-andorcam = start_controller(config)
+andorcam = start_controller(config, verbose=True)
 
 # start the lamp
 w_lamp = start_w_lamp(config, verbose=True)
+
 # automatically call shutdown when the script ends
-atexit.register(w_lamp.shutdown())
+# this produces the following error
+# TypeError: the first argument must be callable
+# ah! I need the function pointer, not the function invocation
+atexit.register(w_lamp.shutdown)
 
 # main portion of script
 w_lamp.set_volts(9.0)  # set to 9 volts

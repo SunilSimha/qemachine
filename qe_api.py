@@ -66,12 +66,14 @@ import controller
 import tungsten_lamp
 
 
-def _connect_ktl_service(service_config):
+def _connect_ktl_service(service_config, verbose=False):
     # unpack the type of the service
     service_type = service_config['controller_type']
 
     if service_type == 'andorcam':
-        return controller.AndorCameraController(service_config['ktl_service_name'], service_config['startup_config'])
+        return controller.AndorCameraController(service_config['ktl_service_name'],
+                                                service_config['startup_config'],
+                                                verbose=verbose)
 
     if service_type == 'archon':
         # return an archon controller class
@@ -89,19 +91,20 @@ def open_config(config_filename, **kwargs):
     return config_dict
 
 
-def start_controller(config_dict):
+def start_controller(config_dict, verbose=False):
     # I should figure out a way of parsing raw_config, and pulling
     # everything that matches the pattern 'ccd_controller\d'. Then each
     # matching instance will get it's own ktl service connection
     controller_config = config_dict['ccd_controller0']
 
     if controller_config['ktl_service_name']:
-        ccd_controller = _connect_ktl_service(config_dict['ccd_controller0'])
+        ccd_controller = _connect_ktl_service(config_dict['ccd_controller0'], verbose=verbose)
 
     # add more stuff that needs to be initialized
     # e.g., possibly make network connections
 
     return ccd_controller
+
 
 def start_w_lamp(config_dict, **kwargs):
     lan_address = config_dict['lantronix']['w_lamp']

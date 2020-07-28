@@ -129,17 +129,18 @@ class AndorCameraController(Controller):
     -----
     The behavior of taking an exposure with ktl keywords needs to be tested.
     """
-    def __init__(self, service_name, service_config_dict):
+    def __init__(self, service_name, service_config_dict, verbose=False):
 
         self.andor_service = ktl.Service(service_name)
         # _write_keywords(self.andor_service, service_config_dict)
-        _read_keywords(self.andor_service, service_config_dict)
+        _write_keywords(self.andor_service, service_config_dict, verbose=verbose)
 
     def expose(self, command):
         # start an exposure
         # keyword calls for enums. Possible values
         # None, Abort, Stop, Start
         # python doesn't have enums in the C sense. Instead, pass matching strings
+        # alternetely, passing the enum value is possible, enable this
         # casefold generates all lowercase, useful for case insensitive validation
         valid = {string.casefold() for string in {'None', 'Abort', 'Stop', 'Start'}}
         if command.casefold() not in valid:
@@ -304,9 +305,14 @@ def _read_keywords(ktl_service, keyword_dict):
         keyword_dict[keyword] = value
 
 
-def _write_keywords(ktl_service, keyword_dict):
+def _write_keywords(ktl_service, keyword_dict, verbose=False):
     # writes multiple ktl keywords
+    if verbose:
+        print('Setting up initial configuration \n'
+              'Writing keywords...')
     for keyword, value in keyword_dict.items():
         ktl_keyword = ktl_service[keyword]
         seq_number = ktl_keyword.write(value)  # value possibly requires a string
-
+        if verbose:
+            # print the keyword value pairs
+            print(keyword, value)

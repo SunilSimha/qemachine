@@ -56,6 +56,14 @@ class Controller:
         # retrieve the current temperature of the cooler
         pass
 
+    def set_exposure_mode(self, expmode):
+        # set the exposure mode, e.g., single or continuous
+        pass
+
+    def get_exposure_mode(self):
+        # retrieve the exposure mode setting
+        pass
+
     def set_exposure_time(self, new_exposure_time):
         # set the exposure time
         pass
@@ -127,11 +135,28 @@ class AndorCameraController(Controller):
         # _write_keywords(self.andor_service, service_config_dict)
         _read_keywords(self.andor_service, service_config_dict)
 
-    def expose(self):
+    def expose(self, command):
         # start an exposure
-        # possible exposure values
+        # keyword calls for enums. Possible values
         # None, Abort, Stop, Start
-        self.andor_service['EXPOSE']
+        # python doesn't have enums in the C sense. Instead, pass matching strings
+        # casefold generates all lowercase, useful for case insensitive validation
+        valid = {string.casefold() for string in {'None', 'Abort', 'Stop', 'Start'}}
+        if command.casefold() not in valid:
+            raise ValueError('expose: command must be one of %s' % valid)
+        self.andor_service['EXPOSE'].write(command)
+
+    def set_exposure_mode(self, expmode):
+        # set the exposure mode, e.g., single or continuous
+        # use matching strings instead of enum
+        valid = {string.casefold() for string in {'Single', 'Continuous'}}
+        if expmode.casefold() not in valid:
+            raise ValueError('set_exposure_mode: expmode must be one of %s' % valid)
+        self.andor_service['EXPMODE'].write(expmode)
+
+    def get_exposure_mode(self):
+        # retrieve the exposure mode setting
+        pass
 
     def set_exposure_time(self, new_exposure_time):
         # set the exposure time
@@ -143,7 +168,17 @@ class AndorCameraController(Controller):
 
     def set_cooler(self, cooler_on):
         # turn the cooler on or off
-        """"""
+        """
+
+        Parameters
+        ----------
+        cooler_on: bool
+            True turns the cooler on, False turns it off.
+
+        Returns
+        -------
+
+        """
         self.andor_service['COOLING'].write(cooler_on)
         # cooler_on possibly needs to be stringified
 
@@ -174,25 +209,38 @@ class AndorCameraController(Controller):
 
     def get_amp(self):
         # retrieve the current selected amp
+        # currently not defined for Andorcam
         pass
 
-    def set_gain(self):
+    def set_gain(self, gainmode):
         # select the gain
-        pass
+        # use matching strings to replace enums
+        valid = {string.casefold() for string in {'Gain1', 'Gain2'}}
+        if gainmode.casefold() not in valid:
+            raise ValueError('set_gain: gainmode must be one of %s' % valid)
+        self.andor_service['GAINMODE'].write(gainmode)
 
     def get_gain(self):
         # retrieve the current gain
         return self.andor_service['GAINMODE'].read()
 
-    def set_read_speed(self):
+    def set_read_speed(self, readmode):
         # select the readout speed
-        pass
+        # use matching strings to replace enums
+        valid = {string.casefold() for string in {'1.0MHz', '0.1MHz'}}
+        if readmode.casefold() not in valid:
+            raise ValueError('set_read_speed: readmode must be one of %s' % valid)
+        self.andor_service['READMODE'].write(readmode)
 
     def get_read_speed(self):
         # retrieve the current readout speed
         return self.andor_service['READSPEED'].read()
 
     def set_binning(self, new_bins):
+        # use matching strings to replace enums
+        valid = {string.casefold() for string in {'1,1', '2,2', '4,4'}}
+        if new_bins.casefold() not in valid:
+            raise ValueError('set_binning: new_bins must be one of %s' % valid)
         self.andor_service['BINNING'].write(new_bins)
 
     def get_binning(self):
@@ -230,26 +278,21 @@ class AndorCameraController(Controller):
         # retrieve the current image window
         return self.andor_service['WINDOW'].read()
 
-    def set_shutter(self, mode):
+    def set_shutter(self, shuttermode):
         # open or close the camera shutter
         # possible values
         # 'auto', 'open', 'shut'
-        self.andor_service['SHUTTERMODE'].write(mode)
+        # use matching strings instead of enums
+        valid = {string.casefold() for string in {'auto', 'open', 'shut'}}
+        if shuttermode.casefold() not in valid:
+            raise ValueError('set_shutter: shuttermode must be one of %s' % valid)
+        self.andor_service['SHUTTERMODE'].write(shuttermode)
 
     def get_shutter(self):
         # retrieve the current shutter mode
         return self.andor_service['SHUTTERMODE'].read()
 
-    def _set_expos_mode(self, new_mode):
-        self.andor_service['EXPMODE'].write(new_mode)
 
-    def _take_exposure(self):
-        """
-        This function is an internal routine that commands the Andor
-        camera to take an exposure
-        """
-        self.andor_service['EXPOSE'].write('')
-        # I have no idea what value to pass to trigger a write
 
 
 def _read_keywords(ktl_service, keyword_dict):

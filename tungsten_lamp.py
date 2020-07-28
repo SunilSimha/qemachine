@@ -153,6 +153,7 @@ class TungstenLamp:
             # but the request will result in a timeout error if there is no data to receive
             # to prevent a timeout, send a 'GETS00\r' to ensure something is in the buffer
             # in the future, someone should figure out a better way of emptying the buffer
+            # UPDATE: the SPG says there is a way of clearing the buffer
             self._lan_socket.sendall(b'GETS00\r')
             if verbose:
                 print('Command sent:', b'GETS00\r')

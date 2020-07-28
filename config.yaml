@@ -10,7 +10,7 @@ lantronics :
 ccd_controller0:
     # the name of the service config section MUST match the service name
     # this is how the qe machine knows the service name
-    ktl_service_name : 'andor_test_cam'
+    ktl_service_name : 'shanegcam'
     controller_type : 'andorcam'
     startup_config :
         # this section is interpreted as ktl keyword:value pairs

@@ -1,4 +1,4 @@
-lantronics :
+lantronix :
     # network addresses
     bellows :
         ip : '128.114.17.188'
@@ -22,7 +22,7 @@ ccd_controller0:
         GAINMODE : 0
         READSPEED : '1.0MHz'
         # put whatever keywords that have a controller function here
-        FILENAME :
+        # FILENAME :
 
 
 ccd_controller2:

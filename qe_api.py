@@ -112,14 +112,13 @@ def open_config(config_filename, **kwargs):
 def start_controller(config_dict, config_key='ccd_controller0', verbose=True):
     """
     Constructs a CCD controller object, using the information in the
-    configuration file.
+    configuration file to determine which specific controller object to
+    build.
 
-    This function scans the section of a config dictionary under the
-    given key. It determines what kind of controller object to build by
-    examining key: value pairs, both what the key is, and what the key
-    value contains. Currently, start_controller() only knows how to build
-    ktl keyword controllers, but it is easily extendable by simply
-    defining new keywords.
+    This function scans the section of the given config dictionary under
+    the given key. It determines what kind of controller object to build
+    by examining key: value pairs, both what the key is, and what the key
+    value contains.
 
     For example, if the key named 'ktl_service_name' exists, then
     start_controller() will know to build a ktl service object. The value
@@ -147,15 +146,24 @@ def start_controller(config_dict, config_key='ccd_controller0', verbose=True):
     Parameters
     ----------
     config_dict: dict
-        A dictionary containing configuration information. Typically
-        loaded from a config file.
+        A dictionary containing configuration information. Typically,
+        but not necessarily, loaded from a config file.
     config_key: string, optional
         What key to look under for controller configuration info.
     verbose: bool, optional
+        Set to False to turn off print outputs
 
     Returns
     -------
+    ccd_controller: object
+        An object instance of a controller class. All controller classes
+        should be derived from the base class Controller.
 
+    Notes
+    -----
+    Currently, start_controller() only knows how to build ktl keyword
+    controllers, but it is easily extended by adding new keyword names and
+    defining corresponding constructor helper functions.
     """
     # I should figure out a way of parsing raw_config, and pulling
     # everything that matches the pattern 'ccd_controller\d'. Then each
@@ -165,39 +173,48 @@ def start_controller(config_dict, config_key='ccd_controller0', verbose=True):
     if controller_config['ktl_service_name']:
         ccd_controller = _connect_ktl_service(config_dict[config_key], verbose=verbose)
 
-    # this can be easily extended by adding new keyword names and defining
-    # corresponding constructor helper functions. For example
-    #
+    # This is meant to be extendable
+    # for example, building a C library controller object instead of a ktl
+    # object might look like:
+    # if controller_config['c_service_name']:
+    #   ccd_controller = _start_c_service(config_dict[config_key], kwargs)
+
+    else:
+        raise RuntimeError('CCD controller name not found')
 
     return ccd_controller
 
 
 def start_w_lamp(config_dict, **kwargs):
+    """
+    A TungstenLamp constructor function for starting a class instance
+    using a configuration file.
+
+    The constructor unpacks the config dictionary for building an instance
+    of TungstenLamp
+
+    Parameters
+    ----------
+    config_dict: dict
+        A dictionary containing configuration information. Typically,
+        but not necessarily, loaded from a config file.
+    kwargs: optional
+        Pass-through keyword arguments for the TungstenLamp class
+
+    Returns
+    -------
+
+    """
     # carefully unpack the lan address into a tuple
     lan_address = (config_dict['lantronix']['w_lamp']['ip'],
                    config_dict['lantronix']['w_lamp']['port'])
 
-    return tungsten_lamp.TungstenLamp(lan_address, **kwargs)
+    if config_dict['tungsten_lamp']:
+        # if there is a provided configuration entry, pass it using the double-splat operator
+        return tungsten_lamp.TungstenLamp(lan_address, **config_dict['tungsten_lamp'], **kwargs)
+    else:
+        return tungsten_lamp.TungstenLamp(lan_address, **kwargs)
 
-"""
-Other QE machine functions
-"""
-
-
-def set_current():
-    # control for the Keithley Model 6220 precision current source
-    # not sure what the arguments for this need ot be
-    # or what the current is going to. The tungsten lamp? Xenon lamp? Both?
-    # def not the tungsten lamp, that uses the BK 1696 current source
-
-    pass
-
-
-def diode():
-    # apparently, the diode controller also handles the light source mirror position
-    # it seems the 'light source mirror' selects the XE or W lamp
-
-    pass
 
 
 

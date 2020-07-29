@@ -104,7 +104,7 @@ class TungstenLamp:
     # tcl version is tungstenlamp.tcl.sin
     # main control code in tcl version is the function SetWLamp
     # SetWLamp is about 200 lines long
-    def __init__(self, ip_port, timeout=8, message_size=1024, verbose=False):
+    def __init__(self, ip_port, timeout=8, message_size=1024, verbose=True):
         self.verbose = verbose
         self.message_size = message_size
 

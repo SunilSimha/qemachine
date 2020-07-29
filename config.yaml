@@ -8,16 +8,18 @@ lantronix :
         port : 10002
 
 ccd_controller0:
-    # the name of the service config section MUST match the service name
-    # this is how the qe machine knows the service name
+    # Currently, only ktl controlled services are implemented
+    # To configure a ktl keyword service, the QE machine needs to know:
+    # That the controller is a ktl service
+    # What kind of ktl service it is
+    # The name of the specific ktl service to access
+    # see qe_api: start_controller() for more details
     ktl_service_name : 'shanegcam'
     controller_type : 'andorcam'
     startup_config :
         # this section is interpreted as ktl keyword:value pairs
         # ktl keywords can be arbitrary, but must match actual keywords in the service
-        # make this section generic, if possible
-        # making it generic isn't really feasible
-        # put an inital configuration here if desired
+        # put an initial configuration here if desired
         EXPOSURE : 1.0
         GAINMODE : 0
         READSPEED : '1.0MHz'

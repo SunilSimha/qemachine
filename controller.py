@@ -129,7 +129,7 @@ class AndorCameraController(Controller):
     -----
     The behavior of taking an exposure with ktl keywords needs to be tested.
     """
-    def __init__(self, service_name, service_config_dict, verbose=False):
+    def __init__(self, service_name, service_config_dict, verbose=True):
 
         self.andor_service = ktl.Service(service_name)
         # _write_keywords(self.andor_service, service_config_dict)

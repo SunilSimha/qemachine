@@ -66,11 +66,12 @@ import controller
 import tungsten_lamp
 
 
-def _connect_ktl_service(service_config, verbose=False):
+def _connect_ktl_service(service_config, verbose=True):
     # unpack the type of the service
     service_type = service_config['controller_type']
 
     if service_type == 'andorcam':
+        # build and return an andorcam ktl service
         return controller.AndorCameraController(service_config['ktl_service_name'],
                                                 service_config['startup_config'],
                                                 verbose=verbose)
@@ -85,23 +86,88 @@ def _connect_ktl_service(service_config, verbose=False):
 
 
 def open_config(config_filename, **kwargs):
+    """
+    Opens a yaml file, and returns it as a dictionary.
+
+    This is a simple wrapper for yaml.load()
+
+    Parameters
+    ----------
+    config_filename: string
+        Name of the configuration file, typicall 'config.yaml'
+    kwargs
+        Keyword arguments for yaml.load.
+
+    Returns
+    -------
+    config_dict: dictionary
+        A dictionary containing the QE machine configuration
+    """
     with open(config_filename) as file:
         config_dict = yaml.load(file, **kwargs)
 
     return config_dict
 
 
-def start_controller(config_dict, verbose=False):
+def start_controller(config_dict, config_key='ccd_controller0', verbose=True):
+    """
+    Constructs a CCD controller object, using the information in the
+    configuration file.
+
+    This function scans the section of a config dictionary under the
+    given key. It determines what kind of controller object to build by
+    examining key: value pairs, both what the key is, and what the key
+    value contains. Currently, start_controller() only knows how to build
+    ktl keyword controllers, but it is easily extendable by simply
+    defining new keywords.
+
+    For example, if the key named 'ktl_service_name' exists, then
+    start_controller() will know to build a ktl service object. The value
+    of 'ktl_service_name' is the specific ktl service to access. When
+    loading ktl keyword services, start_controller() also needs to know
+    what kind of ktl service this is, this information must be contained
+    under a key named 'controller_type'. Start_controller() will also load
+    any keywords defined under 'startup_config', treating keyword: value
+    pairs as ktl keyword: value pairs. An example configuration would be:
+
+    ccd_controller0:
+        ktl_service_name : 'shanegcam'
+        controller_type : 'andorcam'
+        startup_config :
+            # this section is interpreted as ktl keyword:value pairs
+            # ktl keywords can be arbitrary, but must match actual keywords in the service
+            EXPOSURE : 1.0
+            GAINMODE : 0
+            READSPEED : '1.0MHz'
+            # put whatever keywords that have a controller function here
+            OBSMODE : 'Other'
+
+
+
+    Parameters
+    ----------
+    config_dict: dict
+        A dictionary containing configuration information. Typically
+        loaded from a config file.
+    config_key: string, optional
+        What key to look under for controller configuration info.
+    verbose: bool, optional
+
+    Returns
+    -------
+
+    """
     # I should figure out a way of parsing raw_config, and pulling
     # everything that matches the pattern 'ccd_controller\d'. Then each
     # matching instance will get it's own ktl service connection
-    controller_config = config_dict['ccd_controller0']
+    controller_config = config_dict[config_key]
 
     if controller_config['ktl_service_name']:
-        ccd_controller = _connect_ktl_service(config_dict['ccd_controller0'], verbose=verbose)
+        ccd_controller = _connect_ktl_service(config_dict[config_key], verbose=verbose)
 
-    # add more stuff that needs to be initialized
-    # e.g., possibly make network connections
+    # this can be easily extended by adding new keyword names and defining
+    # corresponding constructor helper functions. For example
+    #
 
     return ccd_controller
 

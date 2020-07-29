@@ -17,16 +17,20 @@ ccd_controller0:
         # ktl keywords can be arbitrary, but must match actual keywords in the service
         # make this section generic, if possible
         # making it generic isn't really feasible
-        # put an intial configuration here if desired
+        # put an inital configuration here if desired
         EXPOSURE : 1.0
         GAINMODE : 0
         READSPEED : '1.0MHz'
         # put whatever keywords that have a controller function here
         # FILENAME :
+        OBSMODE : 'Other'
 
 
-ccd_controller2:
-    ktl_service_name: None
+ccd_controller1:
+    # in the unlikely event you want to run a second CCD:
+    # make another constructor function, one that accesses a whole
+    # different config section, e.g., ccd_controller1
+    ktl_service_name: 'Andor_test_cam'
     controller_type: 'andorcam'
     startup_config:
         # ktl keywords for startup go here

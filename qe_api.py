@@ -109,7 +109,7 @@ def start_controller(config_dict, verbose=False):
 def start_w_lamp(config_dict, **kwargs):
     # carefully unpack the lan address into a tuple
     lan_address = (config_dict['lantronix']['w_lamp']['ip'],
-                    config_dict['lantronix']['w_lamp']['port'])
+                   config_dict['lantronix']['w_lamp']['port'])
 
     return tungsten_lamp.TungstenLamp(lan_address, **kwargs)
 

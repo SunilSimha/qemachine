@@ -11,9 +11,7 @@ andorcam = start_controller(config, verbose=True)
 w_lamp = start_w_lamp(config, verbose=True)
 
 # automatically call shutdown when the script ends
-# this produces the following error
-# TypeError: the first argument must be callable
-# ah! I need the function pointer, not the function invocation
+# needs the function pointer, not the function invocation
 atexit.register(w_lamp.shutdown)
 
 # main portion of script

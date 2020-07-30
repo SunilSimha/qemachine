@@ -191,7 +191,9 @@ def start_w_lamp(config_dict, **kwargs):
     using a configuration file.
 
     The constructor unpacks the config dictionary for building an instance
-    of TungstenLamp
+    of TungstenLamp. It requires that the config contains the IP address
+    and port number, and allows for the config to contain TungstenLamp
+    options.
 
     Parameters
     ----------
@@ -203,6 +205,7 @@ def start_w_lamp(config_dict, **kwargs):
 
     Returns
     -------
+    instance of class TungstenLamp
 
     """
     # carefully unpack the lan address into a tuple

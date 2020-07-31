@@ -1,10 +1,31 @@
+"""
+Developer notes:
+
+
+The monochromator consists of both a diffraction grating monochromator,
+and a 6-position filter wheel accessory, with both controlled through the
+same serial port interface. For simplicity's sake, both should be wrapped
+in a single class, with possible subclasses if appropriate. The
+monochromator may also have a shutter, whether or not it does should be
+confirmed.
+
+The monochromator can use either the IEEE-488 or RS-232 standard. This doc
+assumes RS-232 serial port communication is being used. This interface is
+similar to the tungsten lamp serial interface. Refer to tungsten_lamp for
+an example of serial port interface control in python.
+
+All messages sent to the monochromator must end in a linefeed character,
+'\n'. Responses from the monochromater end with carriage return and
+newline characters, '\r\n' in python.
+
+
+"""
+
 
 class Monochromator:
     """
-    Class for controlling the monochromator.
+    Class for controlling the Newport Cornerstone 130 model 70000 monochromator.
 
-    The monochomator has several individually controlled parts. For
-    simplicity's sake, they are all to be wrapped in a class
 
     """
     def __init__(self):

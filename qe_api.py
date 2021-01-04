@@ -214,7 +214,7 @@ def start_w_lamp(config_dict, **kwargs):
 
     if config_dict['tungsten_lamp']:
         # if there is a provided configuration entry, pass it using the double-splat operator
-        return tungsten_lamp.TungstenLamp(lan_address, **config_dict['tungsten_lamp'], **kwargs)
+        return tungsten_lamp.TungstenLamp(lan_address, config_dict['tungsten_lamp'], **kwargs)
     else:
         return tungsten_lamp.TungstenLamp(lan_address, **kwargs)
 
